@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Japan View 🌸</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;font-family:'Georgia',serif}
+#game{display:block;width:100vw;height:100vh;touch-action:none}
+
+#questBox{
+  position:fixed;top:14px;left:14px;
+  background:rgba(10,4,0,0.72);border:1px solid rgba(255,190,80,0.4);
+  border-radius:14px;padding:10px 16px;color:#fde8c0;
+  font-size:13px;max-width:230px;line-height:1.7;
+  backdrop-filter:blur(6px);z-index:10;pointer-events:none;
+}
+#questBox .qtitle{font-size:10px;color:#ffb84a;letter-spacing:0.1em;margin-bottom:3px;text-transform:uppercase}
+#questMarker{font-size:11px;color:#ffdd88;margin-top:4px}
+#topRight{
+  position:fixed;top:14px;right:14px;display:flex;flex-direction:column;gap:6px;
+  align-items:flex-end;z-index:10;pointer-events:none;
+}
+#itemCounter,#skillBar,#timeIndicator{
+  background:rgba(10,4,0,0.72);border-radius:20px;
+  padding:5px 14px;font-size:13px;backdrop-filter:blur(6px);
+}
+#itemCounter{border:1px solid rgba(255,190,80,0.4);color:#fde8c0}
+#skillBar{border:1px solid rgba(100,180,255,0.4);color:#aaddff}
+#timeIndicator{border:1px solid rgba(255,190,80,0.35);color:#ffddaa;font-size:11px}
+#controlsHint{
+  position:fixed;bottom:14px;left:14px;
+  background:rgba(10,4,0,0.6);border:1px solid rgba(255,190,80,0.25);
+  border-radius:10px;padding:7px 12px;color:#ccaa88;font-size:10px;
+  line-height:1.8;backdrop-filter:blur(4px);z-index:10;pointer-events:none;
+}
+#interactHint{
+  display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,80px);
+  color:#fde8c0;font-size:12px;background:rgba(10,4,0,0.7);
+  padding:5px 14px;border-radius:20px;border:1px solid rgba(255,190,80,0.4);
+  pointer-events:none;z-index:10;backdrop-filter:blur(4px);
+}
+#dialog{
+  display:none;position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
+  width:min(460px,92vw);
+  background:rgba(8,3,0,0.92);border:1px solid rgba(255,190,80,0.45);
+  border-radius:18px;padding:18px 22px;color:#fde8c0;
+  font-size:14px;line-height:1.75;z-index:20;backdrop-filter:blur(8px);
+}
+#dialog .dname{font-size:11px;color:#ffb84a;margin-bottom:5px;letter-spacing:0.08em;text-transform:uppercase}
+#dialog .dtext{margin-bottom:12px}
+#dialog button{
+  background:rgba(255,190,60,0.18);border:1px solid rgba(255,190,60,0.5);
+  border-radius:20px;padding:6px 20px;color:#ffd580;font-size:13px;
+  cursor:pointer;font-family:Georgia,serif;
+}
+#endScreen{
+  display:none;position:fixed;inset:0;z-index:30;
+  background:rgba(5,2,0,0.92);
+  flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  backdrop-filter:blur(10px);
+}
+#endScreen .deco{font-size:28px;letter-spacing:8px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+#endScreen h1{font-size:clamp(24px,5vw,38px);color:#ffd580;text-shadow:0 0 40px rgba(255,200,80,0.5)}
+#endScreen .msg{font-size:clamp(13px,2.5vw,16px);color:#fce8c0;max-width:360px;text-align:center;line-height:1.9}
+#endScreen .nameTag{font-size:clamp(17px,3.5vw,24px);color:#ffd580;margin-top:4px}
+#endScreen button{
+  margin-top:10px;padding:11px 30px;
+  background:rgba(255,200,80,0.15);border:1px solid rgba(255,200,80,0.45);
+  border-radius:26px;color:#ffd580;font-size:14px;
+  cursor:pointer;font-family:Georgia,serif;
+}
+#loader{
+  position:fixed;inset:0;background:#080200;z-index:50;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  color:#fde8b0;font-size:15px;font-family:Georgia,serif;
+}
+#loader .bar{width:220px;height:3px;background:rgba(255,200,100,0.15);border-radius:2px;overflow:hidden}
+#loader .fill{height:100%;background:linear-gradient(90deg,#ffaa30,#ffee88);border-radius:2px;animation:ld 2.5s ease-out forwards}
+@keyframes ld{from{width:0}to{width:100%}}
+#mobileControls{display:none;position:fixed;bottom:0;left:0;right:0;height:150px;pointer-events:none;z-index:15}
+#joystickZone{position:absolute;left:18px;bottom:18px;width:116px;height:116px;pointer-events:all}
+#joystickBase{position:absolute;inset:0;border-radius:50%;background:rgba(255,200,100,0.1);border:1.5px solid rgba(255,200,100,0.28)}
+#joystickThumb{position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(255,200,100,0.4);border:1.5px solid rgba(255,200,100,0.65);top:50%;left:50%;transform:translate(-50%,-50%)}
+#actionBtns{position:absolute;right:14px;bottom:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:all}
+#actionBtns .row{display:flex;gap:8px}
+.abtn{
+  width:54px;height:54px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;
+  font-size:10px;color:#fde8c0;font-family:Georgia,serif;
+  border:1.5px solid rgba(255,200,100,0.4);
+  background:rgba(10,4,0,0.6);backdrop-filter:blur(4px);
+  user-select:none;-webkit-user-select:none;
+}
+.abtn span{font-size:16px;line-height:1}
+.abtn.fly{border-color:rgba(255,180,60,0.6);background:rgba(255,140,20,0.2)}
+.abtn.jump{border-color:rgba(255,120,80,0.5);background:rgba(255,80,50,0.15)}
+.abtn.dash{border-color:rgba(100,200,255,0.5);background:rgba(60,150,255,0.15)}
+.abtn.run{border-color:rgba(150,255,150,0.45);background:rgba(80,200,80,0.13)}
+.abtn.interact{border-color:rgba(200,200,255,0.5);background:rgba(150,150,255,0.15)}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div>🌸 Membangun dunia Jepang...</div>
+  <div class="bar"><div class="fill"></div></div>
+  <div style="font-size:12px;color:#aa8866;margin-top:4px">Menanam pohon sakura, membangun kuil...</div>
+</div>
+
+<canvas id="game"></canvas>
+
+<div id="questBox">
+  <div class="qtitle">✦ Perjalanan</div>
+  <div id="questText">Jelajahi dunia dan temukan Altar Cahaya di puncak kuil.</div>
+  <div id="questMarker"></div>
+</div>
+
+<div id="topRight">
+  <div id="timeIndicator">🌅 Fajar</div>
+  <div id="itemCounter">🏮 0 / 8</div>
+  <div id="skillBar">✦ Dash siap</div>
+</div>
+
+<div id="interactHint">[ E ] Bicara</div>
+
+<div id="dialog">
+  <div class="dname" id="dname"></div>
+  <div class="dtext" id="dtext"></div>
+  <button id="dialogBtn">Lanjutkan →</button>
+</div>
+
+<div id="endScreen">
+  <div class="deco">🌸 ✨ 🌸</div>
+  <h1>Semangat Besok Hari Senin!</h1>
+  <!-- ✏️ EDIT PESAN DI SINI -->
+  <p class="msg">
+    Halloww Kak Wuri yang selalu hangat dan penuh kasih,<br>
+    semoga setiap harimu seindah langit malam ini —<br>
+    penuh bintang, cahaya, dan hal-hal yang bikin tersenyum. 🌸
+  </p>
+  <!-- ✏️ EDIT NAMA KAKAK DI SINI -->
+  <p class="nameTag">
+    — Semanagat ngajar, Kakak Wuri! 🥰 —
+  </p>
+  <div class="deco">🌙 🏮 🌙</div>
+  <button id="restartBtn">Main Lagi 🌸</button>
+</div>
+
+<div id="mobileControls">
+  <div id="joystickZone">
+    <div id="joystickBase"></div>
+    <div id="joystickThumb"></div>
+  </div>
+  <div id="actionBtns">
+    <div class="row">
+      <div class="abtn interact" id="btnInteract"><span>💬</span>Bicara</div>
+      <div class="abtn dash" id="btnDash"><span>💨</span>Dash</div>
+    </div>
+    <div class="row">
+      <div class="abtn run" id="btnRun"><span>🏃</span>Lari</div>
+      <div class="abtn jump" id="btnJump"><span>↑</span>Lompat</div>
+      <div class="abtn fly" id="btnFly"><span>🕊</span>Terbang</div>
+    </div>
+  </div>
+</div>
+
+<div id="controlsHint">
+  WASD / Arrow: Jalan &nbsp;|&nbsp; Shift: Lari &nbsp;|&nbsp; Space: Lompat<br>
+  F: Terbang &nbsp;|&nbsp; Q: Dash &nbsp;|&nbsp; E: Bicara<br>
+  Klik + drag: Putar kamera
+</div>
+
+<!-- Three.js dari CDN, harus load sebelum modul game -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- Entry point game, type="module" agar bisa pakai import/export -->
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
